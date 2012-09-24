@@ -1,0 +1,8 @@
+import os
+
+from django.conf import settings
+
+
+DATA_EXPORTER_DIRECTORY = os.path.join(settings.MEDIA_ROOT, 'exports')
+
+DATA_EXPORTER_CHANNELS = getattr(settings, 'DATA_EXPORTER_CHANNELS', {})
