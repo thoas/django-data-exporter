@@ -2,7 +2,7 @@ from itertools import chain
 
 from celery.task import task, chord
 
-from data_exporter import get_channel
+from data_exporter.channels import get_channel
 
 
 @task
