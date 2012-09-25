@@ -26,7 +26,10 @@ class Export(object):
                             self.filename + '.%s' % mimetype)
 
     def write(self, data, mimetype):
-        data = tablib.Dataset(*data, headers=self.headers)
+        data = self._generate_dataset(data)
 
         with open(self.get_file_root(mimetype), 'wb') as file:
             file.write(getattr(data, mimetype))
+
+    def _generate_dataset(self, data):
+        return tablib.Dataset(*data, headers=self.headers)
