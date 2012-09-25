@@ -19,7 +19,7 @@ def inline(name, offset, limit):
 
 
 @task
-def builder(name, mimetype, email, chunks=100):
+def builder(name, mimetype, chunks=100):
     subtasks = []
 
     length = get_channel(name).get_count()

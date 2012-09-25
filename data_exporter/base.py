@@ -19,7 +19,7 @@ class Export(object):
         return value
 
     def get_directory(self):
-        return settings.MAIL_EXPORTER_DIRECTORY
+        return settings.DATA_EXPORTER_DIRECTORY
 
     def get_file_root(self, mimetype):
         return os.path.join(self.get_directory(),
