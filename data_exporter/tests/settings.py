@@ -24,3 +24,7 @@ INSTALLED_APPS = [
     'data_exporter.tests',
     'djcelery',
 ]
+
+DATA_EXPORTER_CHANNELS = {
+    'polls': 'data_exporter.tests.exports.PollExport'
+}

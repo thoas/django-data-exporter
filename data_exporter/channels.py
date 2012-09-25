@@ -7,8 +7,6 @@ from data_exporter import settings
 def get_channel(name):
     try:
         lookup_label = settings.DATA_EXPORTER_CHANNELS[name]
-    except AttributeError:
-        raise ImproperlyConfigured("settings.DATA_EXPORTER_CHANNELS is not configured")
     except KeyError:
         raise ImproperlyConfigured("settings.DATA_EXPORTER_CHANNELS not configured correctly for %r" % name)
     else:
