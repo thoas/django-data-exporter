@@ -12,7 +12,7 @@ def inline(name, offset, limit):
     channel = get_channel(name)
 
     for obj in channel.get_query(offset, limit):
-        datas.append([channel.format(column, getattr(obj, column))
+        datas.append([channel.format(column, obj)
                       for column in channel.columns])
 
     return datas

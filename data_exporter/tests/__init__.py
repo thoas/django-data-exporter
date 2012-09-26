@@ -34,7 +34,9 @@ class ExportTests(TestCase):
         self.channel = channels.get_channel('polls')
 
     def test_format(self):
-        self.assertEqual(self.channel.format('key', 'value'), 'value')
+        obj = type('lamdbaobject', (object,), {'key': 'value'})()
+
+        self.assertEqual(self.channel.format('key', obj), 'value')
 
     def test_get_file_root(self):
         self.assertEqual(self.channel.get_directory(), settings.DATA_EXPORTER_DIRECTORY)

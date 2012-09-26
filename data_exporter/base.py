@@ -20,8 +20,8 @@ class Export(object):
     def get_count(self):
         raise NotImplementedError
 
-    def format(self, key, value):
-        return value
+    def format(self, key, obj):
+        return getattr(obj, key)
 
     def get_directory(self):
         return settings.DATA_EXPORTER_DIRECTORY
