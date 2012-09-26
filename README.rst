@@ -104,5 +104,5 @@ All your registered channels.
 The directory used to export your data.
 
 .. _Celery: http://celeryproject.org/
-.. _GitHub: https://github.com/thoas/django-rq-mail
+.. _GitHub: https://github.com/thoas/django-data-exporter
 .. _tablib: http://docs.python-tablib.org/en/latest/index.html
