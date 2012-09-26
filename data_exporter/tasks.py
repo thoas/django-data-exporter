@@ -20,14 +20,10 @@ def inline(name, offset, limit):
 
 @task
 def builder(name, mimetype, chunks=100):
-    subtasks = []
-
-    length = get_channel(name).get_count()
-
-    for i in xrange(chunks, length, chunks):
-        subtasks.append(inline.subtask((name, i, i + chunks)))
-
-    chord(subtasks)(compute.subtask(kwargs={'name': name, 'mimetype': mimetype}))
+    return chord(generate_subtasks_builder(name, chunks))(compute.subtask(kwargs={
+        'name': name,
+        'mimetype': mimetype
+    }))
 
 
 @task
@@ -36,3 +32,8 @@ def compute(data_list, **kwargs):
 
     channel.write(list(chain.from_iterable(data_list)),
                   kwargs.get('mimetype'))
+
+
+def generate_subtasks_builder(name, chunks):
+    return [inline.subtask((name, i, i + chunks))
+            for i in xrange(chunks, get_channel(name).get_count(), chunks)]

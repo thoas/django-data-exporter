@@ -27,7 +27,6 @@ class Export(object):
         return settings.DATA_EXPORTER_DIRECTORY
 
     def get_file_root(self, mimetype):
-
         filename_format = self.filename_format % {
             'filename': self.filename,
             'date': self.get_formatted_date()

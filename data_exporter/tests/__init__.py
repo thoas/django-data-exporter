@@ -7,10 +7,10 @@ from datetime import datetime
 from django.test import TestCase
 from django.core.exceptions import ImproperlyConfigured
 
-from data_exporter import channels
+from data_exporter import channels, tasks, settings
 from data_exporter.base import Export
 from data_exporter.tests.exports import PollExport
-from data_exporter import settings
+from data_exporter.tests.models import Poll
 from data_exporter.signals import export_done
 
 
@@ -86,3 +86,21 @@ class ExportTests(TestCase):
             self.channel.write(data, 'csv')
 
             self.assertTrue(self.export)
+
+
+class TasksTests(TestCase):
+    length = 1000
+
+    def setUp(self):
+        for i in xrange(self.length):
+            Poll.objects.create(question='Fake question n.%d' % i)
+
+    def test_inline_task(self):
+        datas = tasks.inline('polls', 0, 100) # NOQA
+
+        self.assertEqual(len(datas), 100)
+
+        self.assertEqual(len(datas[0]), len(channels.get_channel('polls').columns))
+
+    def test_builder_task(self):
+        self.assertEqual(len(tasks.generate_subtasks_builder('polls', 100)), 9)

@@ -12,8 +12,6 @@ DATABASES = {
 SITE_ID = 1
 DEBUG = True
 
-CELERY_ALWAYS_EAGER = True
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,3 +26,5 @@ INSTALLED_APPS = [
 DATA_EXPORTER_CHANNELS = {
     'polls': 'data_exporter.tests.exports.PollExport'
 }
+
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunnerStoringResult'
