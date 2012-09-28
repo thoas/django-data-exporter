@@ -15,7 +15,7 @@ def inline(name, mimetype, offset, limit):
         datas.append([channel.format(column, obj)
                       for column in channel.columns])
 
-    channel.write(datas, mimetype, offset, limit, signal=False)
+    channel.write(datas, mimetype, offset, limit)
 
     return offset, limit
 
@@ -38,5 +38,5 @@ def compute(offsets, **kwargs):
 
 
 def generate_subtasks_builder(name, mimetype, chunks):
-    return [inline.subtask((name, mimetype, i, i + chunks))
+    return [inline.subtask((name, mimetype, i, chunks))
             for i in xrange(0, get_channel(name).get_count(), chunks)]
