@@ -30,7 +30,10 @@ class Export(object):
                                       self.directory, self.get_formatted_date())
 
         if not os.path.exists(directory_path):
-            os.makedirs(directory_path)
+            try:
+                os.makedirs(directory_path)
+            except OSError:
+                pass
 
         return directory_path
 
