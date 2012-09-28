@@ -11,7 +11,7 @@ from data_exporter import channels, tasks, settings
 from data_exporter.base import Export
 from data_exporter.tests.exports import PollExport
 from data_exporter.tests.models import Poll
-from data_exporter.signals import export_done
+from data_exporter.signals import export_done, combine_done
 
 
 class ChannelTests(TestCase):
@@ -39,12 +39,12 @@ class ExportTests(TestCase):
         self.assertEqual(self.channel.format('key', obj), 'value')
 
     def test_get_file_root(self):
-        self.assertEqual(self.channel.get_directory(), settings.DATA_EXPORTER_DIRECTORY)
-
         with patch.object(Export, 'get_formatted_date') as get_formatted_date_method:
             date_format = datetime.now().strftime(self.channel.date_format)
 
             get_formatted_date_method.return_value = date_format
+
+            self.assertEqual(self.channel.get_directory(), os.path.join(settings.DATA_EXPORTER_DIRECTORY, self.channel.directory, date_format))
 
             self.assertEqual(self.channel.get_file_root('xls'),
                              os.path.join(self.channel.get_directory(),
@@ -72,7 +72,7 @@ class ExportTests(TestCase):
 
             file_handle.write.assert_called_with(self.channel._generate_dataset(data).csv)
 
-    def test_write_signals_sent(self):
+    def test_export_signals_sent(self):
         with patch('__builtin__.open', create=True) as mock_open:
             def callback(sender, **kwargs):
                 self.export = True
@@ -89,6 +89,21 @@ class ExportTests(TestCase):
 
             self.assertTrue(self.export)
 
+    def test_combine_signals_sent(self):
+        with patch('__builtin__.open', create=True) as mock_open:
+            def callback(sender, **kwargs):
+                self.export = True
+
+            combine_done.connect(callback)
+
+            self.export = False
+
+            mock_open.return_value = MagicMock(spec=file)
+
+            self.channel.combine(((0, 100),), 'csv')
+
+            self.assertTrue(self.export)
+
 
 class TasksTests(TestCase):
     length = 1000
@@ -98,11 +113,18 @@ class TasksTests(TestCase):
             Poll.objects.create(question='Fake question n.%d' % i)
 
     def test_inline_task(self):
-        datas = tasks.inline('polls', 0, 100) # NOQA
+        with patch('__builtin__.open', create=True) as mock_open:
+            mock_open.return_value = MagicMock(spec=file)
 
-        self.assertEqual(len(datas), 100)
+            tasks.inline('polls', 'csv', 0, 100) # NOQA
 
-        self.assertEqual(len(datas[0]), len(channels.get_channel('polls').columns))
+            file_handle = mock_open.return_value.__enter__.return_value
+
+            datas = file_handle.write._mock_call_args[0][0].split('\n')
+
+            self.assertEqual(len(datas), 102)
+
+            self.assertEqual(len(datas[0].split(',')), len(channels.get_channel('polls').columns))
 
     def test_builder_task(self):
-        self.assertEqual(len(tasks.generate_subtasks_builder('polls', 100)), 9)
+        self.assertEqual(len(tasks.generate_subtasks_builder('polls', 'csv', 100)), 10)

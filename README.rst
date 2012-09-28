@@ -49,9 +49,10 @@ in your ``polls`` application and extend ``Export`` to build your own Exporter :
 
 
     class PollExport(Export):
-        filename = 'polls'
+        filename = 'poll'
         columns = ('id', 'question')
         headers = ('id', 'question')
+        directory = 'polls'
 
         def get_query(self, offset=None, limit=None):
             qs = Poll.objects.all()

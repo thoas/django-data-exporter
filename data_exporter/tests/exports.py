@@ -4,7 +4,8 @@ from data_exporter.tests.models import Poll
 
 
 class PollExport(Export):
-    filename = 'polls'
+    filename = 'poll'
+    directory = 'polls'
     columns = ('id', 'question')
     headers = ('id', 'question')
 
