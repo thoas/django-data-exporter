@@ -6,6 +6,9 @@ from datetime import datetime
 from data_exporter import settings
 from data_exporter.signals import export_done, combine_done
 
+from django.core.files.storage import get_storage_class
+from django.core.files.base import ContentFile
+
 
 class Export(object):
     columns = ()
@@ -15,6 +18,11 @@ class Export(object):
 
     date_format = '%Y/%m/%d'
     filename_format = '%(filename)s'
+
+    def __init__(self, *args, **kwargs):
+        storage_class = get_storage_class(kwargs.pop('storage_class', settings.DATA_EXPORTER_STORAGE_CLASS))
+
+        self.storage = storage_class(location=settings.DATA_EXPORTER_DIRECTORY)
 
     def get_query(self, *args, **kwargs):
         raise NotImplementedError
@@ -31,16 +39,7 @@ class Export(object):
         return unicode(value)
 
     def get_directory(self):
-        directory_path = os.path.join(settings.DATA_EXPORTER_DIRECTORY,
-                                      self.directory, self.get_formatted_date())
-
-        if not os.path.exists(directory_path):
-            try:
-                os.makedirs(directory_path)
-            except OSError:
-                pass
-
-        return directory_path
+        return os.path.join(self.directory, self.get_formatted_date())
 
     def get_filename_format(self):
         return self.filename_format % {
@@ -69,13 +68,12 @@ class Export(object):
         self.write_dataset(dataset, mimetype, offset=offset, limit=limit, signal=signal)
 
     def write_dataset(self, dataset, mimetype, offset=None, limit=None, signal=True):
-        with open(self.get_file_root(mimetype, offset, limit), 'wb') as file:
-            file.write(getattr(dataset, mimetype))
+        file_root = self.get_file_root(mimetype, offset, limit)
 
-            if signal:
-                export_done.send(sender=self, file=file)
+        self.storage.save(file_root, ContentFile(getattr(dataset, mimetype)))
 
-            file.truncate()
+        if signal:
+            export_done.send(sender=self, file=file)
 
     def _generate_dataset(self, data):
         return tablib.Dataset(*data, headers=self.headers)
@@ -83,16 +81,17 @@ class Export(object):
     def combine(self, offsets, mimetype, signal=True):
         file_root = self.get_file_root(mimetype)
 
-        with open(file_root, 'wb') as file:
-            for i, current_offset in enumerate(offsets):
-                offset, limit = current_offset
+        parts = []
 
-                with open(self.get_file_root(mimetype, offset, limit)) as chunk_file:
-                    itr = chunk_file.xreadlines()
-                    if i != 0:
-                        next(itr)
+        for i, current_offset in enumerate(offsets):
+            offset, limit = current_offset
 
-                    for line in itr:
-                        file.write(line)
-            if signal:
-                combine_done.send(sender=self, file=file)
+            with self.storage.open(self.get_file_root(mimetype, offset, limit)) as file:
+
+                for chunk in file.chunks():
+                    parts.append(chunk)
+
+        self.storage.save(file_root, ContentFile(''.join(parts)))
+
+        if signal:
+            combine_done.send(sender=self, file=file)
