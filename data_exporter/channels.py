@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.importlib import import_module
 
-from data_exporter import settings
+from . import settings
 
 
 def get_channel(name, *args, **kwargs):

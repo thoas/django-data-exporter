@@ -3,11 +3,11 @@ import tablib
 
 from datetime import datetime
 
-from data_exporter import settings
-from data_exporter.signals import export_done, combine_done
-
 from django.core.files.storage import get_storage_class
 from django.core.files.base import ContentFile
+
+from . import settings
+from .signals import export_done, combine_done
 
 
 class Export(object):
@@ -20,9 +20,11 @@ class Export(object):
     filename_format = '%(filename)s'
 
     def __init__(self, *args, **kwargs):
-        storage_class = get_storage_class(kwargs.pop('storage_class', settings.DATA_EXPORTER_STORAGE_CLASS))
+        storage_class = get_storage_class(kwargs.pop('storage_class',
+                                                     settings.DATA_EXPORTER_STORAGE_CLASS))
 
-        self.storage = storage_class(location=settings.DATA_EXPORTER_DIRECTORY)
+        self.storage = kwargs.pop('storage',
+                                  storage_class(location=settings.DATA_EXPORTER_DIRECTORY))
 
     def get_query(self, *args, **kwargs):
         raise NotImplementedError

@@ -1,8 +1,7 @@
-from data_exporter import settings
+from . import settings
+from .channels import get_channel
 
 from celery.task import task, chord
-
-from data_exporter.channels import get_channel
 
 
 @task
