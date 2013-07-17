@@ -116,7 +116,7 @@ class TasksTests(TestCase):
         with patch('__builtin__.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
 
-            tasks.inline('polls', 'csv', 0, 100) # NOQA
+            tasks.inline('polls', 'csv', 0, 100)  # NOQA
 
             file_handle = mock_open.return_value.__enter__.return_value
 
