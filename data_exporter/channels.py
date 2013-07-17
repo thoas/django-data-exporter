@@ -4,7 +4,7 @@ from django.utils.importlib import import_module
 from data_exporter import settings
 
 
-def get_channel(name):
+def get_channel(name, *args, **kwargs):
     try:
         lookup_label = settings.DATA_EXPORTER_CHANNELS[name]
     except KeyError:
@@ -18,4 +18,4 @@ def get_channel(name):
             raise ImproperlyConfigured(
                 "Could not find channel '%s': %s" % (name, e))
         else:
-            return channel_class()
+            return channel_class(*args, **kwargs)

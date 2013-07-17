@@ -23,7 +23,12 @@ class Export(object):
         raise NotImplementedError
 
     def format(self, key, obj):
-        return getattr(obj, key)
+        value = getattr(obj, key)
+
+        if callable(value):
+            return unicode(value())
+
+        return unicode(value)
 
     def get_directory(self):
         directory_path = os.path.join(settings.DATA_EXPORTER_DIRECTORY,
