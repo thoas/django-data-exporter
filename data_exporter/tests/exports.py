@@ -12,13 +12,13 @@ class PollExport(Export):
     def get_query(self, offset=None, limit=None):
         qs = Poll.objects.all()
 
-        if offset and limit:
+        if not offset is None and not limit is None:
             return qs[offset:limit]
 
-        if limit:
+        elif limit:
             return qs[:limit]
 
-        if offset:
+        elif offset:
             return qs[offset:]
 
         return qs
