@@ -1,3 +1,5 @@
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -28,3 +30,5 @@ DATA_EXPORTER_CHANNELS = {
 }
 
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunnerStoringResult'
+
+DATA_EXPORTER_DIRECTORY = os.path.join(os.path.dirname(__file__), 'data')
