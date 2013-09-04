@@ -70,6 +70,8 @@ class Export(object):
         self.write_dataset(dataset, mimetype, offset=offset, limit=limit, signal=signal)
 
     def write_dataset(self, dataset, mimetype, offset=None, limit=None, signal=True):
+        self.pre_export(dataset, mimetype, offset=offset, limit=limit)
+
         file_root = self.get_file_root(mimetype, offset, limit)
 
         self.storage.save(file_root, ContentFile(getattr(dataset, mimetype)))
@@ -77,10 +79,14 @@ class Export(object):
         if signal:
             export_done.send(sender=self, file=file)
 
+        self.post_export(file, dataset, mimetype, offset=offset, limit=limit)
+
     def _generate_dataset(self, data):
         return tablib.Dataset(*data, headers=self.headers)
 
     def combine(self, offsets, mimetype, signal=True):
+        self.pre_combine(offsets, mimetype)
+
         file_root = self.get_file_root(mimetype)
 
         parts = []
@@ -97,3 +103,17 @@ class Export(object):
 
         if signal:
             combine_done.send(sender=self, file=file)
+
+        self.post_combine(file, offsets, mimetype)
+
+    def pre_export(self, dataset, mimetype, offset=None, limit=None):
+        pass
+
+    def post_export(self, file, dataset, mimetype, offset=None, limit=None):
+        pass
+
+    def pre_combine(self, offsets, mimetype):
+        pass
+
+    def post_combine(self, file, offsets, mimetype):
+        pass
