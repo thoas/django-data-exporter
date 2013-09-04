@@ -26,6 +26,9 @@ class Export(object):
         self.storage = kwargs.pop('storage',
                                   storage_class(location=settings.DATA_EXPORTER_DIRECTORY))
 
+        self.args = args
+        self.kwargs = kwargs
+
     def get_query(self, *args, **kwargs):
         raise NotImplementedError
 
