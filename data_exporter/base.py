@@ -35,13 +35,13 @@ class Export(object):
     def get_count(self):
         raise NotImplementedError
 
-    def format(self, key, obj):
-        value = getattr(obj, key)
+    def format(self, key, obj, default=None):
+        value = getattr(obj, key, default)
 
         if callable(value):
-            return unicode(value())
+            return unicode(value() or default)
 
-        return unicode(value)
+        return unicode(value or default)
 
     def get_directory(self):
         return os.path.join(self.directory, self.get_formatted_date())
@@ -68,9 +68,10 @@ class Export(object):
         return datetime.now().strftime(self.date_format)
 
     def write(self, data, mimetype, offset=None, limit=None, signal=True):
-        dataset = self._generate_dataset(data)
-
-        self.write_dataset(dataset, mimetype, offset=offset, limit=limit, signal=signal)
+        self.write_dataset(tablib.Dataset(*data), mimetype,
+                           offset=offset,
+                           limit=limit,
+                           signal=signal)
 
     def write_dataset(self, dataset, mimetype, offset=None, limit=None, signal=True):
         self.pre_export(dataset, mimetype, offset=offset, limit=limit)
@@ -84,22 +85,18 @@ class Export(object):
 
         self.post_export(file, dataset, mimetype, offset=offset, limit=limit)
 
-    def _generate_dataset(self, data):
-        return tablib.Dataset(*data, headers=self.headers)
-
     def combine(self, offsets, mimetype, signal=True):
         self.pre_combine(offsets, mimetype)
 
         file_root = self.get_file_root(mimetype)
 
-        parts = []
+        parts = [getattr(tablib.Dataset([], headers=self.headers), mimetype)]
 
         for i, current_offset in enumerate(offsets):
             offset, limit = current_offset
 
             with self.storage.open(self.get_file_root(mimetype, offset, limit)) as file:
-
-                for chunk in file.chunks():
+                for chunk in file:
                     parts.append(chunk)
 
         self.storage.save(file_root, ContentFile(''.join(parts)))
